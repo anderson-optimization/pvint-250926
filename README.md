@@ -1,57 +1,107 @@
-# Interview Assignments Template
+# Oh My Payments (60-Minute Live Exercise)
 
-Template repository for coding/architecture/design assignments used in interviews.
+This task is intentionally time-boxed to ~1 hour. You won’t finish everything—and that’s fine. We care about how you reason, prioritize, communicate trade-offs, and write code under constraints.
 
-Assignments are grouped by **position type**. Each task should define **tiered requirements*- (e.g., Tier 1 = Junior, Tier 4 = Staff) so you can assess depth, not just completion.
+## Context
 
-## How to Use This Repo
+You’ll build a backend service that ingests and analyzes payments.
 
-### 1. Create a Candidate Repo
+What We’re Evaluating:
 
-- **Create a new public repo*- using this template.
-  - Give it a unique name **without personal data* - (GDPR): e.g. `pv-int-250722`, `pv-prospect-int-250722`.
-- **Remove irrelevant assignment folders and files*- (leave only what you’ll use).
-- **Enable branch protection*- on `main` (require PRs).
+- Can you quickly ship something correct (Tier 1–2)?
+- Do you know how to introduce concurrency safely (Tier 3)?
+- Can you think creatively about anomalies/performance (Tier 4), even if you only stub or explain?
 
-### 2. Invite the Candidate
+Deliverables (within the hour):
 
-- Add the candidate with **Write*- access.
+1. Design diagram for Tier 0.
+2. Working code for as many tiers as you can reasonably complete.
 
-### 3. During the Interview
+### Tiered Requirements
 
-Ask the candidate to:
+Progress through tiers in order. It’s OK to jump ahead and leave TODOs if you explain your plan.
 
-  1. Clone the repo.
-  2. Create a feature branch (`feature/solution` or similar).
-  3. Commit/push work as they go.
-  4. Open a Pull Request into `main` at the end of the coding assignment.
+### Tier 1 — Parse & Summarize (Baseline)
 
-> (If time-boxed live coding: remind them it’s okay to leave TODOs and explain trade-offs in the PR description.)
+Read data from [data/example_input.txt](./data/example_input.txt), count occurrences of each payment status (e.g., SUCCESS, INFO, FAILURE) and write summary JSON to output/summary.json. Handle basic errors (don’t crash on bad data).
 
-### 4. After the Interview
+Each line has the shape: `[timestamp] [payment_status] [service_name] [user_id] [message]`, Example: `2025-07-22T12:34:56Z INFO AuthenticationService user123 User login successful`.
 
-- Review via the PR
-- Record scores in your scorecard and archive the repo.
+Example summary:
 
-## Repository Structure (example)
-
-```yml
-backend/
-  <assignment-name>/
-    README.md          # Problem statement & tiers
-    SCORECARD.md       # Scorecard
-    data/              # Sample inputs
-frontend/
-devops/
+```json
+{
+  "SUCCESS": 1000,
+  "INFO": 120,
+  "FAILURE": 30
+}
 ```
 
-## Tiering Guidelines (quick reminder)
+You can use AI to generate initial Tier1 implementation. Here's a prompt:
 
-- **Tier 1**: Baseline correctness, simplest path.
-- **Tier 2**: Broader functionality, simple analytics/UX.
-- **Tier 3**: Concurrency, scalability, integration points.
-- **Tier 4**: Advanced optimizations, resilience, creativity.
+```txt
+Write the simplest possible program in <YOUR_LANGUAGE> that:
+1. Reads a text file line by line from data/example_input.txt.
+2. Counts how many times each log level (SUCCESS, INFO, FAILURE) appears.
+3. Writes a JSON file to output/summary.json with counts per log level.
+4. Ignores malformed lines without stopping the program.
 
-## Privacy & Compliance
+Keep the code to a minimum - the minimal logic to get the job done (no over-engineering, no abstractions, no separation of concerns).
 
-- No candidate names or other personal data in repo names, branches, or commits.
+Each line has the shape: [timestamp] [payment_status] [service_name] [user_id] [message]
+Example: `2025-07-22T12:34:56Z INFO AuthenticationService user123 User login successful`
+
+Example summary:
+{
+  "SUCCESS": 1000,
+  "INFO": 120,
+  "FAILURE": 30
+}
+```
+
+### Tier 2 — Deeper Analytics
+
+In addition to Tier 1:
+
+Identify top 10 services and top 10 users by payment volume.
+
+Compute peak usage hours (group by hour of day).
+
+Extend output/summary.json:
+
+``` json
+{
+  "statuses": {"SUCCESS": 1000, "INFO": 120, "FAILURE": 30},
+  "top_services": ["AuthService", "PaymentService", ...],
+  "top_users": ["user123", "user456", ...],
+  "peak_hours": ["12:00-13:00", "16:00-17:00"]
+}
+```
+
+### Tier 3 — Concurrency & “Real-Time” Simulation
+
+In addition to Tier 2:
+
+File watcher / trigger: Detect new files in data/ and process them without restarting (polling, FS events, or queued tasks - your choice).
+
+Concurrent processing: Use threads/async/workers to process multiple files or chunks concurrently.
+
+Show you considered safety (race conditions, back-pressure) even if it’s minimal (e.g., a queue + worker pool).
+
+### Tier 4 — Anomalies & Performance Constraints
+
+In addition to Tier 3 (design, pseudo-code or partial implementation is acceptable):
+
+Anomaly detection: Define and detect at least one anomaly type (e.g., weird timestamp, unknown status, error spikes, single user spamming). Output to output/anomalies.json.
+
+Performance/Memory visibility: Log or print execution time & peak memory usage.
+
+Scalability thought experiment: Briefly outline (code or notes) how you’d handle larger inputs (multi-GB / billions of lines) under a 500MB RAM cap and <60s latency for new files.
+
+### Tech Instructions
+
+- Use any backend language: Python, .NET, Node.js, Rust, Go, etc.
+- Use internet to lookup syntax if you need.
+- Except for the initial Tier 1 baseline, do not use AI to generate a working solution—we are interested to see your thought process and problem solving ability, not someone else’s.
+
+Good luck — have fun and narrate your thinking as you go!
